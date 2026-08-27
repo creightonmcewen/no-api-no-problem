@@ -30,16 +30,41 @@ session, and everything above rung 1 piggybacks off that. Second, rung 0 isn't o
 
 ## Reference implementation
 
-`reference/` holds a self-contained demonstration against a fictional portal:
+Two pieces, and the split between them is the point. `demo/` is the closed system you are
+reaching into. `example-skill/` is the thing you build, and it is self-contained so you can copy
+it straight out.
 
-- `demo_portal.py` — a tiny local "time & billing portal" with a cookie login and JSON endpoints
-  that only the logged-in session can reach. Stands in for the real thing.
-- `portal_client.py` — the rung-1/2 client: reads the session from the browser's cookie store
-  (via [pycookiecheat](https://github.com/n8henrie/pycookiecheat)) or an exported cookie, then
-  speaks to the portal's JSON endpoints directly. CLI with `--json` for agent consumption.
-- `skill-example/` — an agent skill that consumes the client, which is the point: once a portal
-  is a CLI, it's agent-legible, and "check my unbilled hours" becomes a sentence instead of a
-  session.
+- `demo/portal.py` — a tiny local "time & billing portal" with a cookie login and JSON endpoints
+  that only the logged-in session can reach. Stands in for the real thing. You would never ship
+  this; it exists so the client has something honest to talk to.
+- `example-skill/` — a complete agent skill. `SKILL.md` tells the agent when to reach for the
+  portal and how to read what comes back, and `scripts/portal_client.py` is the rung-1/2 client
+  underneath it, reading the session from the browser's cookie store (via
+  [pycookiecheat](https://github.com/n8henrie/pycookiecheat)) or an exported cookie and calling
+  the portal's JSON endpoints directly.
+
+Try it end to end:
+
+```sh
+python3 demo/portal.py                      # terminal 1
+# log in at http://localhost:8484/login (password: letmein)
+cd example-skill && python3 scripts/portal_client.py hours --unbilled --json
+```
+
+## Using this on your own platform
+
+1. Open the product and use it normally with DevTools on the Network tab, filtered to XHR. What
+   the page fetches, you can fetch. Write down the endpoints you actually need, not all of them.
+2. Copy `example-skill/` to `~/.claude/skills/<your-platform>/` and rewrite
+   `scripts/portal_client.py` against those endpoints. The shape stays — read the session, call
+   the JSON, print `--json` for the agent and a table for you.
+3. Rewrite `SKILL.md` for what your platform actually holds. The description field is what makes
+   the agent reach for it unprompted, so write it in the words someone would use when they have
+   the question, not in the platform's vocabulary.
+4. Put the domain traps in the skill. The ones in the example — a `billed` flag that has nothing
+   to do with invoice status, a light week that is more likely a missing timesheet than a slow
+   one — are what separate a skill that answers correctly from one that reports rows. Nobody else
+   can write those for your platform.
 
 ## Related work
 

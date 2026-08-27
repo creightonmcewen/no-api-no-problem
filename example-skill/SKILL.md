@@ -22,10 +22,10 @@ Always pass `--json`. The table output is for humans reading a terminal; you wan
 the structured version.
 
 ```sh
-python3 reference/portal_client.py hours --json
-python3 reference/portal_client.py hours --unbilled --json
-python3 reference/portal_client.py invoices --json
-python3 reference/portal_client.py invoices --status open --json
+python3 scripts/portal_client.py hours --json
+python3 scripts/portal_client.py hours --unbilled --json
+python3 scripts/portal_client.py invoices --json
+python3 scripts/portal_client.py invoices --status open --json
 ```
 
 `--status` takes `paid`, `open`, or `disputed`. `PORTAL_BASE` points the client at
